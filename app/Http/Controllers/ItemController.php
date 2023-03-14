@@ -1,0 +1,146 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Item;
+use Illuminate\Support\Facades\Storage;
+
+class ItemController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        return Item::orderBy('created_at')->get();
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+
+        $formFields = $request->validate([
+            'name' => 'required',
+            'description' => '',
+            'image' => 'mimes:jpg,jpeg,png'
+        ]);
+
+        if ($request->hasFile('image')) {
+            $formFields['image'] = $request->file('image')->store('images', 'public');
+        }
+
+        $newItem = Item::create($formFields);
+
+        return $newItem;
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+
+    public function update(Request $request, $id)
+    {
+        $existingItem = Item::find($id);
+
+        $formFields = $request->validate([
+            'name' => 'required',
+            'description' => '',
+            'image.*' => 'nullable|mimes:jpeg,jpg,png'
+        ]);
+
+        if ($request->hasFile('image')) {
+            if ($existingItem->image) {
+                Storage::disk('public')->delete($existingItem->image);
+            }
+            $formFields['image'] = $request->file('image')->store('images', 'public');
+        } else {
+            if ($request->get('delete') == true) {
+                if ($existingItem->image) {
+                    Storage::disk('public')->delete($existingItem->image);
+                    $formFields['image'] = $request->file('image');
+                }
+            }
+        };
+
+        $existingItem->update($formFields);
+
+        return $existingItem;
+    }
+
+
+    public function check(Request $request, $id)
+    {
+        $existingItem = Item::find($id);
+
+        if ($existingItem) {
+            $existingItem->completed = $request->item['completed'] ? true : false;
+            $existingItem->save();
+
+            return $existingItem;
+        }
+
+        return "Item not found";
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $existingItem = Item::find($id);
+
+        if ($existingItem) {
+            if ($existingItem->image) {
+                Storage::disk('public')->delete($existingItem->image);
+            }
+            $existingItem->delete();
+        }
+    }
+}
