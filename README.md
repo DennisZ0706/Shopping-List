@@ -65,7 +65,7 @@ Items in the list can be edited by clicking the pencil button after their own na
 ## Preview
 
 ![screenshot_hover](Showcase/screenshot_hover.png?raw=true "Hover over an item to show image")
-Hover over an item to show image of the item
+Hover over an item to show the image of the item
 
 ![screenshot_click_item](Showcase/screenshot_click_item.png?raw=true "Click an item to show additional info")
 Click on an item to show the additional info of the item
